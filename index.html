@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>外语考试听力音频快速制作工具</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+    <script src="audiobuffer-to-wav.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="process.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column mt-5 mb-3">
+                <h1>外语考试听力音频快速制作工具</h1>
+            </div>
+        </div>
+        <div class="bg-light row" id="loading"><div class="col h-100 align-middle py-3"><h2 class="text-center">Loading...</h2></div></div>
+        <div class="bg-light row d-none" id="mainframe">
+        <div class="col">
+        <form class="mt-3 p-3" id="mainform">
+             <div class="m-2 p-3 border border-info rounded">
+                <div class="form-group row clearfix">
+                    <div class="col-sm-auto">
+                        <label for="voice-cn" class="col-form-label">中文读题人声</label></div>
+                    <div class="col"><select id="voice-cn" class="custom-select">
+                        </select></div>
+                    <div class="col-sm-auto"> <label for="speakingrate-cn" class="col-form-label">中文读题语速</label></div>
+                    <div id="speakingrate-cn" class="form-inline col-auto"><input type="range" id="speed-cn"
+                            class="range custom-range col p-0" min="0.25" max="4.0" step="0.01"
+                            value="0.9">&nbsp;&nbsp;&nbsp;<input type="number" min="0.25" max="4.0" step="0.01"
+                            id="speedtxt-cn" value="0.9" class="rangetxt form-control col-4"> </div>
+                </div>
+                <div class="form-group row clearfix">
+                    <div class="col-sm-auto">
+                        <label for="voice-en-male" class="col-form-label">英文男声</label></div>
+                    <div class="col"><select id="voice-en-male" class="custom-select">
+                        </select></div>
+                    <div class="col-sm-auto"><button id="trial-en-male" class="btn btn-info"><span
+                                    class="spinner-border spinner-border-sm d-none" role="status"
+                                    aria-hidden="true"></span> 试听</button></div>
+                    <div class="col-sm-auto"> <label for="voice-en-female" class="col-form-label">英文女声</label></div>
+                    <div class="col"><select id="voice-en-female" class="custom-select">
+                        </select></div>
+                    <div class="col-sm-auto"><button id="trial-en-female" class="btn btn-info"><span
+                                    class="spinner-border spinner-border-sm d-none" role="status"
+                                    aria-hidden="true"></span> 试听</button></div>
+                </div>
+                <audio autoplay hidden id="tem"></audio><audio autoplay hidden id="tef"></audio>
+            </div>
+            <div class="form-group row border border-info m-2 p-3 rounded" id="title">
+                <label for="examTitle" class="col-sm-auto col-form-label">考试标题</label>
+                <div class="col">
+                    <input type="text" class="form-control" id="examTitle" value=""
+                        placeholder="请输入考试的标题。请适当添加句号或逗号来使朗读适当停顿。">
+                </div>
+            </div>
+            <div class="d-none" id="holder">
+                <textarea id="t"></textarea>
+                <input type="range" id="speed" value="0.9">
+                <input type="text" id="voice">
+            </div>
+            <div class="border border-secondary m-2 p-3 rounded questions" id="template">
+                        <div class="form-group">
+                            <label>题干</label>
+                            <input type="text" class="form-control ques">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>语速</label>
+                                <div id="ques-speakingrate" class="form-inline"><input type="range"
+                                        class="range custom-range col p-0 mr-2 speed-ques" min="0.25" max="4.0" step="0.01"
+                                        value="0.78"><input type="number" min="0.25" max="4.0" step="0.01"
+                                        value="0.78" class="rangetxt form-control col-4 speedtxt-ques"> </div>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>浏览时长（秒）</label>
+                                <input type="number" min="1" max="10" step="1" value="3" class="form-control ques-break1">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>作答时长（秒）</label>
+                                <input type="number" min="1" max="10" step="1" value="5" class="form-control ques-break2">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>重复次数</label>
+                                <input type="number" min="1" max="10" step="1" value="1"
+                                    class="form-control ques-repeat">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>重复间隔（秒）</label>
+                                <input type="number" min="1" max="10" step="1" value="2" class="form-control ques-break3">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-sm-auto">原文类型</label>
+                            <div class="col"><select class="custom-select ques-art-type">
+                                    <option selected value="1">一题一个句子</option>
+                                    <option value="2">一段对话</option>
+                                    <option value="3">一篇短文</option>
+                                </select></div>
+                            <div class="usingvoice">
+                                <label class="col-form-label col-sm-auto">使用声音</label>
+                                <div class="btn-group btn-group-toggle col-sm-auto" data-toggle="buttons">
+                                    <label class="btn btn-outline-info active">
+                                        <input type="radio" class="voicegenders usingVoiceEnMale" name="usedvoice" value="1" checked>英文男声
+                                    </label>
+                                    <label class="btn btn-outline-info">
+                                        <input type="radio" class="voicegenders usingVoiceEnFemale" name="usedvoice" value="2">英文女声
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>原文</label>
+                            <textarea class="form-control ques-art" style="height: 300px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-success playthis d-none">播放此题</button>
+                        </div>
+          </div>
+                    <div class="form-group row border border-info m-2 p-3 rounded" id="ending">
+                        <label for="examEnding" class="col-sm-auto col-form-label">结束语</label>
+                        <div class="col">
+                            <input type="text" class="form-control" id="examEnding" value="" placeholder="请输入考试的结束语。">
+                        </div>
+                    </div>
+            <div class="form-group row mt-3 p-2" id="submit">
+                <div class="col-auto"><button id="sub" class="btn btn-primary">播放</button> <button id="saveit"
+                        class="btn btn-secondary" data-toggle="modal" data-target="#inputfilenamedlg">保存音频</button>
+                    <button id="reset" class="btn btn-warning">重置表单</button></div>
+            </div>
+        </form></div></div>
+        <div class="row"><div class="col bg-info align-middle py-3"><p class="text-center text-light">Made by <a href="https://github.com/godspirit00" target="_blank" class="text-light">@godspirit00</a>. Powered by <a href="https://cloud.google.com/text-to-speech" target="_blank" class="text-light">Google Cloud Text to speech</a>.</p></div> </div>
+    </div>
+
+    <div class="modal fade" id="msgbox" tabindex="-1" role="dialog" aria-labelledby="msgbox" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="msgboxTitle">Attention</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="msgboxBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="inputfilenamedlg" tabindex="-1" role="dialog" aria-labelledby="insertRepeat"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">保存音频文件</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>请输入将要保存的音频文件的文件名：</p>
+                    <div class="form-group row">
+                        <div class="col"><input type="text" class="form-control" placeholder="File name" id="filename">
+                        </div><label for="filename" class="col-2 col-form-label"><strong>.wav</strong></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="dlgok9" class="btn btn-primary" data-dismiss="modal">确定</button>
+                    <button id="dlgcancel9" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="doc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+        </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+        </script>
+</body>
+
+</html>
