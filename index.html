@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>外语考试听力音频快速制作工具</title>
+    <title>中小学外语考试听力制作模板</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
     <script src="audiobuffer-to-wav.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -64,7 +64,7 @@
                 <input type="range" id="speed" value="0.9">
                 <input type="text" id="voice">
             </div>
-            <div class="border border-secondary m-2 p-3 rounded questions" id="template">
+            <div class="border border-secondary m-2 p-3 rounded questions d-none" id="template">
                         <div class="form-group">
                             <label>题干</label>
                             <input type="text" class="form-control ques">
@@ -120,8 +120,14 @@
                         </div>
                         <div class="form-group">
                             <button type="button" class="btn btn-success playthis d-none">播放此题</button>
+                            <button type="button" class="btn btn-outline-danger delthis">移除</button>
                         </div>
-          </div>
+                    </div>
+                    <div class="row m-2 rounded text-center" id="addQues">
+                        <div class="col py-2 btn btn-outline-success">
+                            <p class="h2">+</p>
+                        </div>
+                    </div>
                     <div class="form-group row border border-info m-2 p-3 rounded" id="ending">
                         <label for="examEnding" class="col-sm-auto col-form-label">结束语</label>
                         <div class="col">

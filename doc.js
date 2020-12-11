@@ -63,31 +63,40 @@ var paper = {
 const serverPrefix2 = "";
 
 function initForm() {
-    for (let index = 1; index < paper.questions.length; index++) {
-        $("#holder").after($("#template").clone());
+    $(".questions").each(function () {
+        if ($(this).attr("id") != "template") {
+            $(this).remove();
+        }
+    });
+    for (let index = 0; index < paper.questions.length; index++) {
+        $("#template").after($("#template").clone());
     }
     $("#examTitle").val(paper.examTitle);
     $("#examEnding").val(paper.examEnding);
     for (let index = 0; index < paper.questions.length; index++) {
         const element = paper.questions[index];
-        $($(".questions")[index]).find(".ques").val(element.ques);
-        $($(".questions")[index]).find(".speed-ques").val(element.rate);
-        $($(".questions")[index]).find(".ques-break1").val(element.quesbreak1);
-        $($(".questions")[index]).find(".ques-break2").val(element.quesbreak2);
-        $($(".questions")[index]).find(".ques-break3").val(element.quesbreak3);
-        $($(".questions")[index]).find(".ques-repeat").val(element.quesrepeat);
-        $($(".questions")[index]).find(".ques-art-type").val(element.quesarttype);
-        $($(".questions")[index]).find(".voicegenders").attr("name", "usedvoice" + index);
-        $($(".questions")[index]).attr("id", "ques" + index);
+        $($(".questions")[index + 1]).find(".ques").val(element.ques);
+        $($(".questions")[index + 1]).find(".speed-ques").val(element.rate);
+        $($(".questions")[index + 1]).find(".ques-break1").val(element.quesbreak1);
+        $($(".questions")[index + 1]).find(".ques-break2").val(element.quesbreak2);
+        $($(".questions")[index + 1]).find(".ques-break3").val(element.quesbreak3);
+        $($(".questions")[index + 1]).find(".ques-repeat").val(element.quesrepeat);
+        $($(".questions")[index + 1]).find(".ques-art-type").val(element.quesarttype);
+        $($(".questions")[index + 1]).find(".voicegenders").attr("name", "usedvoice" + index);
+        $($(".questions")[index + 1]).removeAttr("id");
+        $($(".questions")[index + 1]).toggleClass("d-none", false);
     }
     $(".usingvoice").each(function (i) {
-        if (i % 2 === 0) { $(this).find(".usingVoiceEnMale").click(); } else { $(this).find(".usingVoiceEnFemale").click(); }
+        if (i % 2 == 0) { $(this).find(".usingVoiceEnMale").click(); } else { $(this).find(".usingVoiceEnFemale").click(); }
     });
     $(".usingvoice").each(function () {
         if ($(this).find("label.active").length > 1) {
             $(this).find(".voicegenders:checked").parent("label").siblings("label").toggleClass("active", false);
         }
     });
+    $(".range").change();
+    $(".ques-art-type").change();
+    $(".ques-repeat").change();
 }
 
 function makeText(JQObject) {
@@ -345,6 +354,14 @@ $(document).ready(function () {
 
     }, 100);
 
+    $(document).on("click", ".delthis", function () {
+        $(this).parents(".questions").remove();
+    });
+
+    $("#addQues").click(() => {
+        $("#addQues").before($(".questions:last").clone());
+    })
+
 });
 
 
@@ -465,7 +482,7 @@ function thingsChange() {
     $("#saveit").attr("disabled", "true");  //saveit button state change
 }
 
-$(document).on("change input", "input", () => thingsChange());
+$(document).on("change input", "#mainform input", () => thingsChange());
 $(document).on("change input", "select", () => thingsChange());
 $(document).on("change input", ".ques-art", () => thingsChange());
 
