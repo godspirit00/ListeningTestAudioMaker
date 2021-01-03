@@ -193,12 +193,14 @@ function makeText(JQObject) {
 }
 
 function changeSubButton(text, state) {
-    if (text != "") $("#sub").html(text);
+    let target = $('#sub');
+    if ($(".sub-active").length > 0) target = $(".sub-active");
+    if (text != "") target.html(text);
     if (state != undefined) {
         if (state) {
-            $("#sub").removeAttr("disabled");
+            target.removeAttr("disabled");
         } else {
-            $("#sub").attr("disabled", "true");
+            target.attr("disabled", "true");
         }
     }
 }
@@ -211,15 +213,17 @@ function msgbox(body, title) {
 
 function disableAll(bool) {
     if (bool) {
-        $("#mainform").find("input").attr("disabled", "true");
-        $("#mainform").find("select").attr("disabled", "true");
-        $("#mainform").find(".playthis").attr("disabled", "true");
-        $("#mainform").find(".ques-art").attr("disabled", "true");
+        $("#mainform input").attr("disabled", "true");
+        $("#mainform select").attr("disabled", "true");
+        $(".questions button").attr("disabled", "true");
+        $("#mainform .ques-art").attr("disabled", "true");
+        if ($(".sub-active").attr("id") != "sub") $("#sub").attr("disabled", "true");
     } else {
-        $("#mainform").find("input").removeAttr("disabled");
-        $("#mainform").find("select").removeAttr("disabled");
-        $("#mainform").find(".playthis").removeAttr("disabled");
-        $("#mainform").find(".ques-art").removeAttr("disabled");
+        $("#mainform input").removeAttr("disabled");
+        $("#mainform select").removeAttr("disabled");
+        $(".questions button").removeAttr("disabled");
+        $("#mainform .ques-art").removeAttr("disabled");
+        if ($(".sub-active").attr("id") != "sub") $("#sub").removeAttr("disabled");
     }
 }
 
@@ -258,6 +262,15 @@ $(document).on("change input", ".ques-art-type", function () {
     $(this).parents(".form-group").next(".form-group").find(".ques-art").attr("placeholder", ph);
     $(this).parents(".form-group").find(".usingvoice").toggleClass("d-none", !uv);
 });
+
+$(document).on('click', '.submit', function () {
+    if (!$(this).hasClass("sub-active")) {
+        $('.submit').toggleClass('sub-active', false);
+        $(this).toggleClass('sub-active', true);
+        thingsChange();
+    }
+});
+
 $(document).ready(function () {
     initForm();
 
@@ -321,15 +334,15 @@ $(document).ready(function () {
         if (playerPointer >= audioQueue.length - 1 || audioQueue[playerPointer + 1] == undefined) {
             if (audioQueue.length > 0) {
                 if (playerPointer < jsonQueue.length - 1) {
-                    changeSubButton('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;&nbsp;请稍候…', false);
                     disableAll(true);
+                    changeSubButton('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;&nbsp;请稍候…', false);
                 } else {
-                    changeSubButton("重放", true);
                     disableAll(false);
+                    changeSubButton("重放", true);
                 }
             } else {
-                changeSubButton("播放", true);
                 disableAll(false);
+                changeSubButton("播放", true);
             }
         }
     });
@@ -347,8 +360,8 @@ $(document).ready(function () {
                     console.log("Audio #" + playerPointer + " is empty, skipping.");
                 }
 
-                changeSubButton("暂停", true);
                 disableAll(true);
+                changeSubButton("暂停", true);
             }
         }
 
@@ -362,6 +375,60 @@ $(document).ready(function () {
         $("#addQues").before($(".questions:last").clone());
     })
 
+});
+
+$(document).on("click", ".playthis", function () {
+    if (audioQueue.length <= 0) {
+        disableAll(true);
+        changeSubButton('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;&nbsp;请稍候…', false);
+
+
+        let txt = "";
+        let target = $(this).parents(".questions");
+        if (target.attr('id') != "template") {
+            if (target.find(".ques-art").val().trim() == "" || target.find(".ques").val().trim() == "") {
+            } else {
+                let thistxt = makeText(target);
+                if (thistxt != false) {
+                    txt += thistxt;
+                } else {
+                    msgbox("This question is mal-formatted. ");
+                }
+            }
+        }
+        console.log("Text generated. \n" + txt);
+        $("#t").val(txt);
+
+        if ($("#t").val().length <= 0) {
+            msgbox("内容为空。", "错误");
+            disableAll(false);
+            changeSubButton("播放", true);
+            return;
+        }
+
+        process();
+        optimizeJSON();
+        reuseAudio(1);
+        sendReq();
+    } else {
+        if (player.ended && playerPointer >= audioQueue.length - 1) {
+            console.log("Audio already retrieved. Start playing.");
+            playerPointer = -1;
+            // Play audioQueue directly.
+            disableAll(true);
+            changeSubButton("暂停", true);
+        } else {
+            if (!player.ended && player.paused) {
+                player.play();
+                disableAll(true);
+                changeSubButton("暂停", true);
+            } else if (!player.ended && !player.paused) {
+                player.pause();
+                disableAll(false);
+                changeSubButton("继续", true);
+            }
+        }
+    }
 });
 
 
@@ -416,26 +483,36 @@ $("#reset").click(() => {
     initForm();
     $(".ques-art").val("");
     thingsChange();
+    disableAll(false);
+    player.pause();
 });
 
 
-$("#sub").click(() => {
+$("#sub").click(function() {
+    if (!$(this).hasClass("sub-active")) {
+        $('.submit').toggleClass('sub-active', false);
+        $(this).toggleClass('sub-active', true);
+        thingsChange();
+    }
+
     if (audioQueue.length <= 0) {
         changeSubButton('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;&nbsp;请稍候…', false);
         disableAll(true);
 
         let txt = "";
         if ($("#examTitle").val().trim() != "") txt += makeText($("#title")) + "<break strength='strong'/>";
-        $(".questions").each(function () {
-            let quesID = Number($(this).attr("id").replace("ques", ""));
-            if ($(this).find(".ques-art").val().trim() == "" || $(this).find(".ques").val().trim() == "") {
-                console.log("Question #" + quesID + " is empty in either question or transcription. Igoring.");
-            } else {
-                let thistxt = makeText($(this));
-                if (thistxt != false) {
-                    txt += thistxt;
+        $(".questions").each(function (i) {
+            let quesID = i;
+            if ($(this).attr('id') != "template") {
+                if ($(this).find(".ques-art").val().trim() == "" || $(this).find(".ques").val().trim() == "") {
+                    console.log("Question #" + quesID + " is empty in either question or transcription. Igoring.");
                 } else {
-                    console.log("Question #" + quesID + " is mal-formatted. Ignoring.");
+                    let thistxt = makeText($(this));
+                    if (thistxt != false) {
+                        txt += thistxt;
+                    } else {
+                        console.log("Question #" + quesID + " is mal-formatted. Ignoring.");
+                    }
                 }
             }
         });
@@ -445,8 +522,8 @@ $("#sub").click(() => {
 
         if ($("#t").val().length <= 0) {
             msgbox("内容为空。", "错误");
-            changeSubButton("播放", true);
             disableAll(false);
+            changeSubButton("播放", true);
             return;
         }
 
@@ -459,17 +536,17 @@ $("#sub").click(() => {
             console.log("Audio already retrieved. Start playing.");
             playerPointer = -1;
             // Play audioQueue directly.
-            changeSubButton("暂停", true);
             disableAll(true);
+            changeSubButton("暂停", true);
         } else {
             if (!player.ended && player.paused) {
                 player.play();
-                changeSubButton("暂停", true);
                 disableAll(true);
+                changeSubButton("暂停", true);
             } else if (!player.ended && !player.paused) {
                 player.pause();
-                changeSubButton("继续", true);
                 disableAll(false);
+                changeSubButton("继续", true);
             }
         }
     }
