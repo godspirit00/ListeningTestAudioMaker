@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>中小学外语考试听力制作模板</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+    <script src="https://lib.baomitu.com/vue/3.2.11/vue.global.js"></script>
+    <script src="/res/js/audiobuffer-to-wav.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/res/js/process.2.0.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="row clearfix">
+                <div class="col-md-12 column mt-5 mb-3">
+                    <h1>广西北部湾经济区中考英语听力制作模板</h1>
+                </div>
+            </div>
+            <div class="bg-light row" v-show="!iamready" id="loading">
+                <div class="col align-middle py-3"
+                    style="height: 500px;display: flex;justify-content: center;align-items: center;">
+                    <h2 class="text-center"><span class="spinner-border spinner-border-sm"
+                            style="width: 3rem; height: 3rem;" role="status"
+                            aria-hidden="true">&nbsp;&nbsp;</span>Loading...</h2>
+                </div>
+            </div>
+            <div class="bg-light row" v-show="iamready" id="mainframe">
+                <div class="col">
+                    <form class="mt-3 p-3" id="mainform">
+                        <div class="row d-flex justify-content-start p-2">
+                            <div class="col-auto">
+                                <button class="btn btn-outline-primary" data-toggle="tooltip" data-html="true"
+                                    title="载入模板/文本内容<b>将会覆盖</b>当前已有内容。" @click="browseJSON()">载入模板/文本内容</button>
+                            </div>
+                            <div class="col">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+                                        保存模板、文本内容
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#" @click="saveTempl(true)">保存当前模板和文本内容</a>
+                                        <a class="dropdown-item" href="#" @click="saveTempl()">保存当前模板</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto align-self-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+                                        设置
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                        <div class="custom-control custom-checkbox dropdown-item mx-3">
+                                            <input type="checkbox" name="repeatwithtwogenders" id="repeatWithTwoGenders"
+                                                class="custom-control-input" v-model="settings.repeatWithTwoGenders">
+                                            <label for="repeatWithTwoGenders"
+                                                class="custom-control-label">使用男女声交替进行重复</label>
+                                        </div>
+                                        <div class="custom-control custom-checkbox dropdown-item mx-3">
+                                            <input type="checkbox" name="skipEmptyQuesOrQuesArt"
+                                                id="skipEmptyQuesOrQuesArt" class="custom-control-input"
+                                                v-model="settings.skipEmptyQuesOrQuesArt">
+                                            <label for="skipEmptyQuesOrQuesArt"
+                                                class="custom-control-label">跳过指示语或原文为空的题目</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="file" name="loadjson" id="loadjson" accept="application/json" class="d-none"
+                            @change="loadJSON($event)">
+
+                        <div class="m-2 p-3 border border-info rounded">
+                            <div class="form-group row clearfix">
+                                <div class="col-sm-auto">
+                                    <label for="voice-cn" class="col-form-label">中文读题人声</label>
+                                </div>
+                                <div class="col"><select id="voice-cn" v-model="voice_cn" class="custom-select">
+                                        <option v-for="(v,i) in cn_voices" :key="i" :value="v.name">{{ v.displayName }}
+                                        </option>
+                                    </select></div>
+                                <div class="col-sm-auto"> <label for="speakingrate-cn"
+                                        class="col-form-label">中文读题语速</label>
+                                </div>
+                                <div class="form-inline col-auto"><input type="range" v-model="speed_cn"
+                                        class="range custom-range col p-0" min="0.25" max="4.0"
+                                        step="0.01">&nbsp;&nbsp;&nbsp;<input type="number" min="0.25" max="4.0"
+                                        step="0.01" id="speakingrate-cn" v-model="speed_cn"
+                                        class="rangetxt form-control col-4">
+                                </div>
+                            </div>
+                            <div class="form-group row clearfix">
+                                <div class="col-sm-auto">
+                                    <label for="voice-en-male" class="col-form-label">英文男声</label>
+                                </div>
+                                <div class="col"><select v-model="voice_en_male" class="custom-select"
+                                        id="voice-en-male">
+                                        <option v-for="(v,i) in en_male_voices" :key="i" :value="v.name">{{
+                                            v.displayName
+                                            }}</option>
+                                    </select></div>
+                                <div class="col-sm-auto">
+                                    <simple-player :src="'/res/audio/demo/'+voice_en_male+'.mp3'">试听</simple-player>
+                                </div>
+                                <div class="col-sm-auto"> <label for="voice-en-female"
+                                        class="col-form-label">英文女声</label>
+                                </div>
+                                <div class="col"><select id="voice-en-female" v-model="voice_en_female"
+                                        class="custom-select">
+                                        <option v-for="(v,i) in en_female_voices" :key="i" :value="v.name">{{
+                                            v.displayName }}</option>
+                                    </select></div>
+                                <div class="col-sm-auto">
+                                    <simple-player :src="'/res/audio/demo/'+voice_en_female+'.mp3'">试听</simple-player>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row border border-info m-2 p-3 rounded">
+                            <label for="examTitle" class="col-sm-auto col-form-label">考试标题</label>
+                            <div class="col">
+                                <input type="text" class="form-control" id="examTitle"
+                                    v-model.trim="thispaper.examTitle" placeholder="请输入考试的标题。请适当添加句号或逗号来使朗读适当停顿。">
+                            </div>
+                            <div class="col-md-2 form-inline">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="startME" v-model="startME">
+                                    <label class="custom-control-label" for="startME">开头音乐</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-secondary m-2 p-3 rounded" v-for="(q,i) in thispaper.questions"
+                            :key="i">
+                            <div class="form-group">
+                                <label>指示语</label>
+                                <input type="text" class="form-control" v-model.trim="q.ques" placeholder="请输入本题的指示语。">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>语速</label>
+                                    <div class="form-inline"><input type="range" class="range custom-range col p-0 mr-2"
+                                            min="0.25" max="4.0" step="0.01" v-model="q.rate"><input type="number"
+                                            min="0.25" max="4.0" step="0.01" v-model="q.rate"
+                                            class="rangetxt form-control col-4">
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label>浏览时长（秒）</label>
+                                    <input type="number" min="1" max="20" step="1" v-model="q.quesbreak1"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label>作答时长（秒）</label>
+                                    <input type="number" min="1" max="20" step="1" v-model="q.quesbreak2"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label>重复次数</label>
+                                    <input type="number" min="1" max="20" step="1" v-model="q.quesrepeat"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group col-md-2" v-if="q.quesrepeat>1">
+                                    <label>重复间隔（秒）</label>
+                                    <input type="number" min="1" max="20" step="1" v-model="q.quesbreak3"
+                                        class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-form-label col-sm-auto">原文类型</label>
+                                <div class="col"><select class="custom-select" v-model="q.quesarttype">
+                                        <option selected value="1">几个句子（一题一个句子）</option>
+                                        <option value="2">一段对话</option>
+                                        <option value="4">几段对话（一题一段对话）</option>
+                                        <option value="3">一篇短文</option>
+                                    </select></div>
+                                <div v-if="q.quesarttype!=2 && q.quesarttype!=4">
+                                    <label class="col-form-label col-sm-auto">使用声音</label>
+                                    <div class="btn-group btn-group-toggle col-sm-auto" data-toggle="buttons">
+                                        <label class="btn btn-outline-info active">
+                                            <input type="radio" value="0" v-model="q.thisvoice">英文男声
+                                        </label>
+                                        <label class="btn btn-outline-info">
+                                            <input type="radio" value="1" v-model="q.thisvoice">英文女声
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>原文</label>
+                                <textarea class="form-control" style="height: 300px;" v-model.trim="q.quesart"
+                                    :placeholder="artholder(q.quesarttype)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <play-button type="sub" @iamclicked="submit(i)" :active="activePB==i"
+                                    :mode="playerStatus"></play-button>&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-outline-danger" @click="delthis(i)">移除</button>
+                            </div>
+                        </div>
+                        <div class="row m-2 rounded text-center" @click="addques">
+                            <div class="col py-2 btn btn-outline-success">
+                                <p class="h2">+</p>
+                            </div>
+                        </div>
+                        <div class="form-group row border border-info m-2 p-3 rounded">
+                            <label for="examEnding" class="col-sm-auto col-form-label">结束语</label>
+                            <div class="col">
+                                <input type="text" class="form-control" id="examEnding"
+                                    v-model.trim="thispaper.examEnding" placeholder="请输入考试的结束语。">
+                            </div>
+                        </div>
+                        <div class="form-group row mt-3 p-2">
+                            <div class="col-auto">
+                                <play-button type="main" @iamclicked="submit(-1)" :active="activePB==-1"
+                                    :mode="playerStatus"></play-button>&nbsp;&nbsp;&nbsp;
+                                <save-button :mode="playerIsSaving" :active="playerCanSave"></save-button>
+                                &nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col bg-info align-middle py-3">
+                    <p class="text-center text-light">Made by <a href="https://github.com/godspirit00" target="_blank"
+                            class="text-light">@godspirit00</a>. Powered by <a
+                            href="https://cloud.google.com/text-to-speech" target="_blank" class="text-light">Google
+                            Cloud
+                            Text to speech</a>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="msgbox" tabindex="-1" role="dialog" aria-labelledby="msgbox" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="msgboxTitle">Attention</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="msgboxBody">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-warning" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="inputfilenamedlg" tabindex="-1" role="dialog" aria-labelledby="insertfilename"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">保存音频文件</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>请输入将要保存的音频文件的文件名：</p>
+                        <div class="form-group row">
+                            <div class="col"><input type="text" class="form-control" placeholder="File name"
+                                    id="filename" v-model.trim="savefn">
+                            </div><label for="filename" class="col-2 col-form-label"><strong>.wav</strong></label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" data-dismiss="modal" @click="startSaving"
+                            :disabled="savefn==''">确定</button>
+                        <button class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var paper = {
+            "examTitle": "广西北部湾经济区初中学业水平测试。英语。听力测试。",
+            "examEnding": "听力测试到此结束。",
+            "questions": [{
+                "ques": "（一）听句子，选图片。你将听到五个句子，请在下列六幅图中，选出与所听句子内容相符的图片，并在答题卡上将选定答案的字母标号涂黑。每个句子读一遍。",
+                "rate": 0.75,
+                "quesbreak1": 5,
+                "quesbreak2": 5,
+                "quesrepeat": 1,
+                "quesbreak3": 0,
+                "quesarttype": 1
+            }, {
+                "ques": "（二）听句子，选答语。你将听到五个句子，请根据句子内容，选择恰当的答语，并在答题卡上将选定答案的字母标号涂黑。每个句子读两遍。",
+                "rate": 0.75,
+                "quesbreak1": 5,
+                "quesbreak2": 5,
+                "quesrepeat": 2,
+                "quesbreak3": 3,
+                "quesarttype": 1
+            }, {
+                "ques": "（三）听对话，选择最佳答案。你将听到三段对话，请根据对话内容，选出每个问题的最佳答案，并在答题卡上将选定答案的字母标号涂黑。每段对话读两遍。请听第一段对话，回答第 11至13 小题。",
+                "rate": 0.73,
+                "quesbreak1": 5,
+                "quesbreak2": 8,
+                "quesrepeat": 2,
+                "quesbreak3": 5,
+                "quesarttype": 2
+            }, {
+                "ques": "请听第二段对话，回答第14至16 小题。",
+                "rate": 0.73,
+                "quesbreak1": 5,
+                "quesbreak2": 8,
+                "quesrepeat": 2,
+                "quesbreak3": 5,
+                "quesarttype": 2
+            }, {
+                "ques": "请听第三段对话，回答第 17至20 小题。",
+                "rate": 0.73,
+                "quesbreak1": 5,
+                "quesbreak2": 8,
+                "quesrepeat": 2,
+                "quesbreak3": 5,
+                "quesarttype": 2
+            }, {
+                "ques": "（四）听短文，选择最佳答案。你将听到一篇短文，请根据短文内容，选出每个问题的最佳答案，并在答题卡上将选定答案的字母标号涂黑。短文读两遍。",
+                "rate": 0.71,
+                "quesbreak1": 5,
+                "quesbreak2": 8,
+                "quesrepeat": 2,
+                "quesbreak3": 5,
+                "quesarttype": 3
+            }, {
+                "ques": "（五）听短文，填信息。你将听到一篇短文，请根据短文内容，将所缺信息填入答题卡对应的横线上，每空一词。短文读两遍。",
+                "rate": 0.71,
+                "quesbreak1": 5,
+                "quesbreak2": 8,
+                "quesrepeat": 2,
+                "quesbreak3": 5,
+                "quesarttype": 3
+            }]
+        };
+
+
+        function processPaper(p) {
+            var pp = p;
+            for (let i = 0; i < pp.questions.length; i++) {
+                pp.questions[i].quesart = "";
+                pp.questions[i].thisvoice = "0";
+            }
+            return pp;
+        }
+
+        function msgbox(body, title) {
+            title != undefined ? $("#msgboxTitle").text(title) : $("#msgboxTitle").text("Attention");
+            $("#msgboxBody").html(body);
+            $("#msgbox").modal("show");
+        }
+
+
+        var cm = new ClipManager();
+        var player = new Player(cm);
+
+        $("#mainform input, #mainform select, #mainform textarea, #mainform button").attr(":disabled", "playerStatus=='playing'||playerStatus=='loading'||playerIsSaving");
+
+        var id_dd = cm.addAudioFile("/res/audio/dingdong.mp3", "Ding Dong!");
+        var id_start = cm.addAudioFile("/res/audio/start.mp3", "Startup!");
+
+
+        const vm = Vue.createApp({
+            data() {
+                return {
+                    thispaper: processPaper(paper),
+                    cn_voices: [],
+                    en_voices: [],
+                    voice_cn: "",
+                    speed_cn: 0.68,
+                    voice_en_male: "",
+                    voice_en_female: "",
+                    startME: false,
+                    texts: [],
+                    activePB: -2, //-2: idle, -1: main, 0~:sub ques
+                    playerStatus: "",
+                    playerIsSaving: false,
+                    playerCanSave: false,
+                    savefn: "",
+                    settings: {
+                        repeatWithTwoGenders: true,
+                        skipEmptyQuesOrQuesArt: true
+                    }
+                }
+            },
+            computed: {
+                en_male_voices() {
+                    let v = [];
+                    for (mv in this.en_voices) {
+                        if (this.en_voices[mv].gender == 1) {
+                            v.push(this.en_voices[mv]);
+                        }
+                    }
+                    return v;
+                },
+                en_female_voices() {
+                    let v = [];
+                    for (mv in this.en_voices) {
+                        if (this.en_voices[mv].gender == 2) {
+                            v.push(this.en_voices[mv]);
+                        }
+                    }
+                    return v;
+                },
+                iamready() {
+                    if (this.en_voices.length > 0 && this.cn_voices.length > 0) { return true; } else { return false; }
+                }
+            },
+            created() {
+                getVoices("en-us").then((v) => {
+                    if (v) {
+                        let en_voices = [];
+                        v.forEach((val) => {
+                            vals = val.name.split("-");
+                            val.displayName = "({0}) {1}".format(vals[1], vals[3]);
+                            en_voices.push(val);
+                        });
+                        this.en_voices = en_voices;
+                    }
+                });
+                getVoices("zh-cn").then((v) => {
+                    if (v) {
+                        let cn_voices = [];
+                        v.forEach((val) => {
+                            vals = val.name.split("-");
+                            val.displayName = "({0}) {1}".format(ssml_gender[val.gender], vals[3]);
+                            cn_voices.push(val);
+                        });
+                        this.cn_voices = cn_voices;
+                    }
+                });
+
+            },
+            watch: {
+                en_voices(n, o) {
+                    if (n.length > 0) {
+                        this.voice_en_male = n[7].name;
+                        this.voice_en_female = n[9].name;
+                    }
+                },
+                cn_voices(n, o) {
+                    if (n.length > 0) this.voice_cn = n[2].name;
+                }
+            },
+            methods: {
+                artholder(arttype) {
+                    switch (String(arttype)) {
+                        case "1":
+                            ph = "请输入听力原文。一行一个小题的内容。";
+                            break;
+                        case "2":
+                            ph = "请输入听力原文，并在每行的开头以“M: ”标注英文男声所说内容，以“W: ”标注英文女声所说内容。请注意使用“: ”分隔说话人和说话内容。";
+                            break;
+                        case "3":
+                            ph = "请输入听力原文。";
+                            break;
+                        case "4":
+                            ph = "请输入听力原文，并在每行的开头以“M: ”标注英文男声所说内容，以“W: ”标注英文女声所说内容。请注意使用“: ”分隔说话人和说话内容，并以一个空行分隔各小题的内容。";
+                            break;
+                        default:
+                            ph = "请输入听力原文。";
+                            break;
+
+                    }
+                    return ph;
+                },
+                delthis(id) {
+                    this.thispaper.questions.splice(id, 1);
+                },
+                addques() {
+                    this.thispaper.questions.push({
+                        "ques": "",
+                        "rate": 0.74,
+                        "quesbreak1": 5,
+                        "quesbreak2": 8,
+                        "quesrepeat": 1,
+                        "quesbreak3": 5,
+                        "quesarttype": 1,
+                        "quesart": "",
+                        "thisvoice": "0"
+                    });
+                },
+                makeText(qid) {
+                    let wholetext = false;
+                    if (qid == -1) wholetext = true;
+
+                    let p = this.thispaper;
+                    let t = [];
+
+                    if (this.startME && wholetext) {
+                        t.push(setaudio.format(id_start));
+                    }
+                    if (p.examTitle != "" && wholetext) {
+                        t.push(setvoiceSpeed.format(this.voice_cn, this.speed_cn, p.examTitle));
+                        t.push(setpause.format("2"));
+                    }
+                    let start = (wholetext ? 0 : qid);
+                    let end = (wholetext ? p.questions.length : start + 1)
+                    for (let id = start; id < end; id++) {
+                        i = p.questions[id];
+                        if (this.settings.skipEmptyQuesOrQuesArt) {
+                            shalliskip = i.ques == "" || i.quesart == "";
+                        } else {
+                            shalliskip = i.ques == "" && i.quesart == "";
+                        }
+                        if (shalliskip) {
+                            console.log("Either the instruction or the text is empty. Ignoring...")
+                            continue
+                        }
+                        let quesart = i.quesart.replaceAll("\t", " ").replaceAll("&", " and ").replaceAll("\"", " ")
+                        t.push(setvoiceSpeed.format(this.voice_cn, this.speed_cn, i.ques));
+                        switch (String(i.quesarttype)) {
+                            case "1":
+                                let subques = quesart.split("\n");
+                                subques.forEach(element => {
+                                    if (element.trim() != "") {
+                                        t.push(setpause.format(i.quesbreak1), setaudio.format(id_dd));
+                                        if (i.quesrepeat > 1) {
+                                            for (let j = 0; j < i.quesrepeat; j++) {
+                                                if (this.settings.repeatWithTwoGenders) {
+                                                    t.push(setvoiceSpeed.format(((j + Number(i.thisvoice)) % 2 == 0 ? this.voice_en_male : this.voice_en_female), i.rate, element));
+                                                } else {
+                                                    t.push(setvoiceSpeed.format((i.thisvoice == "0" ? this.voice_en_male : this.voice_en_female), i.rate, element));
+                                                }
+                                                t.push(setpause.format(i.quesbreak3));
+                                            }
+                                        } else {
+                                            t.push(setvoiceSpeed.format((i.thisvoice == "0" ? this.voice_en_male : this.voice_en_female), i.rate, element));
+                                            t.push(setpause.format(i.quesbreak3));
+                                        }
+                                        t.push(setpause.format(Math.abs(i.quesbreak2 - i.quesbreak3)));
+                                    }
+                                });
+                                break;
+                            case "2":
+                                let conv = [];
+                                t.push(setpause.format(i.quesbreak1), setaudio.format(id_dd));
+                                let lines = quesart.split("\n");
+                                for (let index = 0; index < lines.length; index++) {
+                                    const element = lines[index].trim();
+                                    if (element == "") continue;
+                                    let curCharPos = element.search(/(:|：)/);
+                                    if (curCharPos == -1) {
+                                        if (index <= 0) {
+                                            return false;
+                                        } else {
+                                            for (var iii = index; iii <= 0; iii--) {
+                                                if (conv[iii].includes("</voice>")) break;
+                                            }
+                                            conv[iii] = conv[iii].replace("</voice>", " " + lines[index] + "</voice>");
+                                            continue;
+                                        }
+                                    } else {
+                                        let curChar = element.substring(0, curCharPos).trim();
+                                        if (curChar.toLowerCase() == "m" || curChar.toLowerCase() == "man" || curChar.toLowerCase() == "boy") {
+                                            conv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
+                                        } else if (curChar.toLowerCase() == "w" || curChar.toLowerCase() == "woman" || curChar.toLowerCase() == "girl") {
+                                            conv.push(setvoiceSpeed.format(this.voice_en_female, i.rate, element.substring(curCharPos + 1)));
+                                        } else {
+                                            conv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
+                                        }
+                                    }
+                                    // Added break to make the conversation sound less rushy
+                                    conv.push(setpause.format(0.4));
+                                }
+                                for (let r = 0; r < i.quesrepeat; r++) {
+                                    t = t.concat(conv);
+                                    t.push(setpause.format(i.quesbreak3));
+                                }
+                                t.push(setpause.format(Math.abs(i.quesbreak2 - i.quesbreak3)));
+                                break;
+                            case "4":
+                                let convs = [];
+                                let dialogs = quesart.split("\n\n");
+                                dialogs.forEach((dlg) => {
+                                    convs.push(setpause.format(i.quesbreak1), setaudio.format(id_dd));
+                                    let thisconv = [];
+                                    let lines2 = dlg.split("\n");
+                                    for (let index = 0; index < lines2.length; index++) {
+                                        let element = lines2[index].trim();
+                                        if (element == "") continue;
+                                        element = element.replace(/([0-9]{1,}\.)(\s){0,}((M|W|w|m)(:|：))/, "$3 $1");
+                                        let curCharPos = element.search(/(:|：)/);
+                                        if (curCharPos == -1) {
+                                            if (index <= 0) {
+                                                return false;
+                                            } else {
+                                                for (var iiii = index; iiii <= 0; iiii--) {
+                                                    if (thisconv[iiii].includes("</voice>")) break;
+                                                }
+                                                thisconv[iii] = thisconv[iii].replace("</voice>", " " + lines2[index] + "</voice>");
+                                                continue;
+                                            }
+                                        } else {
+                                            let curChar = element.substring(0, curCharPos).trim();
+                                            if (curChar.toLowerCase() == "m" || curChar.toLowerCase() == "man" || curChar.toLowerCase() == "boy") {
+                                                thisconv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
+                                            } else if (curChar.toLowerCase() == "w" || curChar.toLowerCase() == "woman" || curChar.toLowerCase() == "girl") {
+                                                thisconv.push(setvoiceSpeed.format(this.voice_en_female, i.rate, element.substring(curCharPos + 1)));
+                                            } else {
+                                                thisconv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
+                                            }
+                                        }
+                                        thisconv.push(setpause.format(0.4));
+                                    }
+                                    for (let r = 0; r < i.quesrepeat; r++) {
+                                        convs = convs.concat(thisconv);
+                                        convs.push(setpause.format(i.quesbreak3));
+                                    }
+                                    convs.push(setpause.format(Math.abs(i.quesbreak2 - i.quesbreak3)));
+                                });
+                                t = t.concat(convs);
+                                break;
+                            case "3":
+                                t.push(setpause.format(i.quesbreak1), setaudio.format(id_dd));
+                                if (i.quesrepeat > 1) {
+                                    for (let r = 0; r < i.quesrepeat; r++) {
+                                        if (this.settings.repeatWithTwoGenders) {
+                                            t.push(setvoiceSpeed.format(((r + Number(i.thisvoice)) % 2 == 0 ? this.voice_en_male : this.voice_en_female), i.rate, quesart.replaceAll("\n", "  ")));
+                                        } else {
+                                            t.push(setvoiceSpeed.format((Number(i.thisvoice) == 0 ? this.voice_en_male : this.voice_en_female), i.rate, quesart.replaceAll("\n", "  ")));
+                                        }
+                                        t.push(setpause.format(i.quesbreak3));
+                                    }
+                                } else {
+                                    t.push(setvoiceSpeed.format((Number(i.thisvoice) == 0 ? this.voice_en_male : this.voice_en_female), i.rate, quesart.replaceAll("\n", "  ")));
+                                    t.push(setpause.format(i.quesbreak3));
+                                }
+                                t.push(setpause.format(Math.abs(i.quesbreak2 - i.quesbreak3)));
+                                break;
+                            default:
+                                break;
+
+                        }
+                    }
+                    if (p.examEnding != "" && wholetext) {
+                        t.push(setvoiceSpeed.format(this.voice_cn, this.speed_cn, p.examEnding));
+                    }
+                    for (let id = 0; id < t.length; id++) {
+                        if (id == 0) continue;
+                        let e = $("<xml>" + t[id - 1] + "</xml>");
+                        let e2 = $("<xml>" + t[id] + "</xml>");
+                        if (e.find("break").length > 0 && e2.find("break").length > 0) {
+                            let findSec = /([0-9.]+)(ms|s)/.exec(t[id - 1]);
+                            let sec = (findSec[2] == "ms" ? findSec[1] / 1000 : findSec[1]);
+                            let findSec2 = /([0-9.]+)(ms|s)/.exec(t[id]);
+                            let sec2 = (findSec2[2] == "ms" ? findSec2[1] / 1000 : findSec2[1]);
+                            plus = Number(sec) + Number(sec2);
+                            e.find("break").attr("time", plus + "s");
+                            t[id - 1] = e.html();
+                            t.splice(id, 1);
+                            id--;
+                        }
+
+                    }
+                    this.texts = t;
+                    return true;
+                },
+                submit(qid) {
+                    if (this.activePB != qid) { player.clearPlaylist(); this.activePB = qid; }
+                    let m = this.makeText(qid);
+                    if (this.texts.length <= 0) { msgbox("内容为空。"); return; }
+                    if (m) {
+                        this.texts.forEach((v) => {
+                            player.addToPlaylist(cm.addClip(cm.makeJSON(v)));
+                        });
+                        cm.startPreparing();
+                        player.play();
+                    } else {
+                        console.error("Something is wrong with the text.");
+                        msgbox("Uh-oh, something is wrong with what you input.");
+                    }
+                },
+                startSaving() {
+                    player.save(this.savefn);
+                },
+                saveTempl(saveart = false) {
+                    let outstr = JSON.stringify(this.thispaper);
+                    let copy = JSON.parse(outstr);
+                    if (!saveart) {
+                        for (let i = 0; i < copy.questions.length; i++) {
+                            delete copy.questions[i].quesart;
+                        }
+                    }
+                    let t = JSON.stringify(copy);
+                    let blob = new Blob([t], { type: "text/plain;charset=utf-8" });
+                    let dl = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.download = "听力考试" + (saveart ? "" : "模板") + "-" + (this.thispaper.examTitle == "" ? new Date().getTime().toString() : this.thispaper.examTitle) + '.json';
+                    a.href = dl;
+                    $("body").append(a);
+                    a.click();
+                    $(a).remove();
+                    URL.revokeObjectURL(dl);
+                    delete copy;
+                },
+                browseJSON() {
+                    $("#loadjson").click();
+                },
+                loadJSON(event) {
+                    const textloader = new FileReader();
+                    textloader.readAsText(event.target.files[0], 'utf8');
+                    textloader.onload = () => {
+                        try {
+                            let a = JSON.parse(textloader.result);
+                            if (!(a.questions instanceof Array)) {
+                                throw new Error("Not a supported file. Unable to load it.");
+                            } else {
+                                if (a.examTitle == undefined) a.examTitle = "";
+                                if (a.examEnding == undefined) a.examEnding = "";
+                                for (let k = 0; k < a.questions.length; k++) {
+                                    if (a.questions[k].ques == undefined
+                                        || a.questions[k].rate == undefined
+                                        || a.questions[k].quesarttype == undefined || Number(a.questions[k].quesarttype) < 1 || Number(a.questions[k].quesarttype) > 5
+                                        || a.questions[k].quesbreak1 == undefined
+                                        || a.questions[k].quesbreak2 == undefined
+                                        || a.questions[k].quesbreak3 == undefined) throw new Error("Not a supported file. Unable to load it.");
+                                    if (a.questions[k].quesart == undefined) a.questions[k].quesart = "";
+                                    if (a.questions[k].thisvoice == undefined) a.questions[k].thisvoice = "0";
+                                }
+                                this.thispaper = a;
+                            }
+                        } catch (error) {
+                            msgbox(error, "ERROR!");
+                        }
+                    }
+                }
+            }
+        }).component("play-button", {
+            props: ['type', 'active', 'mode'],
+            emits: ['iamclicked'],
+            computed: {
+                typeClass() {
+                    if (this.type == "main") {
+                        return "btn-primary";
+                    } else {
+                        return "btn-outline-success";
+                    }
+                },
+                playText() {
+                    if (this.type == "main") {
+                        return "全部播放";
+                    } else {
+                        return "播放此题";
+                    }
+                }
+            },
+            template: `
+            <button class="btn" :class="[typeClass]" v-if="(mode=='' && active)||!active" :disabled="!active && (mode=='playing'||mode=='loading')" @click="$emit('iamclicked')">{{ playText }}</button>
+            <button class="btn" :class="[typeClass]" disabled v-if="mode=='loading' && active"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>请稍候……</button>
+            <button class="btn" :class="[typeClass]" v-if="mode=='playing' && active" @click="playerPause">暂停</button>
+            <button class="btn" :class="[typeClass]" v-if="mode=='finished' && active" @click="playerPlay">重播</button>
+            <button class="btn" :class="[typeClass]" v-if="mode=='pause' && active" @click="playerPlay">继续</button>
+            `,
+            methods: {
+                playerPause() {
+                    player.pause();
+                },
+                playerPlay() {
+                    player.play();
+                }
+            }
+        })
+            .component("save-button", {
+                props: ['mode', 'active'], //mode <- issaving, active <- cansave
+                template:
+                    `
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#inputfilenamedlg" v-if="mode==false" :disabled="active==false">保存刚刚播放的音频</button>
+            <button class="btn btn-secondary" v-if="mode==true" disabled><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>请稍候……</button>
+            `
+            })
+            .component("simple-player", {
+                props: ["src"],
+                data() {
+                    return {
+                        playerObj: null,
+                        playerStatus: ""
+                    }
+                },
+                created() {
+                    this.playerObj = new Audio(this.src);
+                    this.playerObj.addEventListener("waiting", () => this.playerStatus = "loading");
+                    this.playerObj.addEventListener("playing", () => this.playerStatus = "playing");
+                    this.playerObj.addEventListener("pause", () => this.playerStatus = "pause");
+                    this.playerObj.addEventListener("ended", () => this.playerStatus = "ended");
+                    this.playerObj.addEventListener("emptied", () => this.playerStatus = "");
+                },
+                watch: {
+                    src(n, o) {
+                        this.playerObj.src = n;
+                    }
+                },
+                template:
+                    `
+                    <button class="btn btn-info" v-if="playerStatus=='pause'||playerStatus==''||playerStatus=='ended'" :disabled="src==''||playerObj.error!=null" @click="playerObj.play()"><slot></slot></button>
+            <button class="btn btn-info" disabled v-if="playerStatus=='loading'">  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>  </button>
+            <button class="btn btn-info" v-if="playerStatus=='playing'" @click="playerObj.pause()">暂停</button>
+`
+            })
+            .mount("#app");
+
+        //Workaround for vue and bs component
+        $("label.btn").click(function (e) {
+            $(e.target).children("input").click();
+        });
+
+        $("#mainform input, #mainform select, #mainform textarea").change(() => {
+            player.clearPlaylist();
+            cm.stopPreparing();
+        });
+        $("#inputfilenamedlg").on("shown.bs.modal", () => {
+            vm.savefn = vm.thispaper.examTitle == "" ? new Date().getTime().toString() : vm.thispaper.examTitle;
+            let t = $("#filename");
+            t.focus();
+            t.select();
+        });
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        });
+
+        $(document).on("click", "button", (e) => {
+            e.preventDefault();
+        });
+
+
+        setInterval(() => {
+            vm.playerStatus = player.statusText;
+            vm.playerCanSave = player.cansave;
+            vm.playerIsSaving = player.issaving;
+        }, 200);
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+        </script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.min.js"></script>
+</body>
+
+</html>
