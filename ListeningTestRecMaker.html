@@ -7,9 +7,7 @@
     <title>中小学外语考试听力制作模板</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
     <script src="https://lib.baomitu.com/vue/3.2.11/vue.global.js"></script>
-    <script src="/res/js/audiobuffer-to-wav.js"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
-    <script src="/res/js/process.2.0.js"></script>
 </head>
 
 <body>
@@ -17,7 +15,7 @@
         <div class="container">
             <div class="row clearfix">
                 <div class="col-md-12 column mt-5 mb-3">
-                    <h1>广西北部湾经济区中考英语听力制作模板</h1>
+                    <h1>中小学外语考试听力制作模板</h1>
                 </div>
             </div>
             <div class="bg-light row" v-show="!iamready" id="loading">
@@ -31,7 +29,7 @@
             <div class="bg-light row" v-show="iamready" id="mainframe">
                 <div class="col">
                     <form class="mt-3 p-3" id="mainform">
-                        <div class="row d-flex justify-content-start p-2">
+                        <div class="row p-2 d-flex justify-content-start">
                             <div class="col-auto">
                                 <button class="btn btn-outline-primary" data-toggle="tooltip" data-html="true"
                                     title="载入模板/文本内容<b>将会覆盖</b>当前已有内容。" @click="browseJSON()">载入模板/文本内容</button>
@@ -73,17 +71,15 @@
                                 </div>
                             </div>
                         </div>
-
                         <input type="file" name="loadjson" id="loadjson" accept="application/json" class="d-none"
                             @change="loadJSON($event)">
-
                         <div class="m-2 p-3 border border-info rounded">
                             <div class="form-group row clearfix">
                                 <div class="col-sm-auto">
                                     <label for="voice-cn" class="col-form-label">中文读题人声</label>
                                 </div>
                                 <div class="col"><select id="voice-cn" v-model="voice_cn" class="custom-select">
-                                        <option v-for="(v,i) in cn_voices" :key="i" :value="v.name">{{ v.displayName }}
+                                        <option v-for="(v,i) in cn_voices" :key="i" :value="v.name">{{ v.name }}
                                         </option>
                                     </select></div>
                                 <div class="col-sm-auto"> <label for="speakingrate-cn"
@@ -102,24 +98,18 @@
                                 </div>
                                 <div class="col"><select v-model="voice_en_male" class="custom-select"
                                         id="voice-en-male">
-                                        <option v-for="(v,i) in en_male_voices" :key="i" :value="v.name">{{
-                                            v.displayName
+                                        <option v-for="(v,i) in en_voices" :key="i" :value="v.name">{{
+                                            v.name
                                             }}</option>
                                     </select></div>
-                                <div class="col-sm-auto">
-                                    <simple-player :src="'/res/audio/demo/'+voice_en_male+'.mp3'">试听</simple-player>
-                                </div>
                                 <div class="col-sm-auto"> <label for="voice-en-female"
                                         class="col-form-label">英文女声</label>
                                 </div>
                                 <div class="col"><select id="voice-en-female" v-model="voice_en_female"
                                         class="custom-select">
-                                        <option v-for="(v,i) in en_female_voices" :key="i" :value="v.name">{{
-                                            v.displayName }}</option>
+                                        <option v-for="(v,i) in en_voices" :key="i" :value="v.name">{{
+                                            v.name }}</option>
                                     </select></div>
-                                <div class="col-sm-auto">
-                                    <simple-player :src="'/res/audio/demo/'+voice_en_female+'.mp3'">试听</simple-player>
-                                </div>
                             </div>
                         </div>
                         <div class="form-group row border border-info m-2 p-3 rounded">
@@ -218,8 +208,6 @@
                             <div class="col-auto">
                                 <play-button type="main" @iamclicked="submit(-1)" :active="activePB==-1"
                                     :mode="playerStatus"></play-button>&nbsp;&nbsp;&nbsp;
-                                <save-button :mode="playerIsSaving" :active="playerCanSave"></save-button>
-                                &nbsp;&nbsp;&nbsp;
                             </div>
                         </div>
                     </form>
@@ -228,10 +216,7 @@
             <div class="row">
                 <div class="col bg-info align-middle py-3">
                     <p class="text-center text-light">Made by <a href="https://github.com/godspirit00" target="_blank"
-                            class="text-light">@godspirit00</a>. Powered by <a
-                            href="https://cloud.google.com/text-to-speech" target="_blank" class="text-light">Google
-                            Cloud
-                            Text to speech</a>.</p>
+                            class="text-light">@godspirit00</a>. </p>
                 </div>
             </div>
         </div>
@@ -254,35 +239,35 @@
             </div>
         </div>
 
-        <div class="modal fade" id="inputfilenamedlg" tabindex="-1" role="dialog" aria-labelledby="insertfilename"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">保存音频文件</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>请输入将要保存的音频文件的文件名：</p>
-                        <div class="form-group row">
-                            <div class="col"><input type="text" class="form-control" placeholder="File name"
-                                    id="filename" v-model.trim="savefn">
-                            </div><label for="filename" class="col-2 col-form-label"><strong>.wav</strong></label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary" data-dismiss="modal" @click="startSaving"
-                            :disabled="savefn==''">确定</button>
-                        <button class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
+        String.prototype.format = function (args) {
+            var result = this;
+            if (arguments.length < 1) {
+                return result;
+            }
+            var data = arguments;
+            if (arguments.length == 1 && typeof (args) == "object") {
+                data = args;
+                for (var key in data) {
+                    var value = data[key];
+                    if (undefined != value) {
+                        result = result.replaceAll("{" + key + "}", value);
+                    }
+                }
+            } else if (arguments.length > 1 || (arguments.length == 1 && typeof (args) != "object")) {
+                for (let i = 0; i < arguments.length; i++) {
+                    result = result.replaceAll("{" + i + "}", arguments[i]);
+                }
+            }
+            return result;
+        }
+
+        const setvoiceSpeed = '<voice name = "{0}" rate="{1}">{2}</voice>';
+        const setpause = "<break time='{0}s'></break>";
+        const setaudio = '<audio id="{0}"></audio>';
+
         var paper = {
             "examTitle": "广西北部湾经济区初中学业水平测试。英语。听力测试。",
             "examEnding": "听力测试到此结束。",
@@ -345,7 +330,6 @@
             }]
         };
 
-
         function processPaper(p) {
             var pp = p;
             for (let i = 0; i < pp.questions.length; i++) {
@@ -358,25 +342,160 @@
         function msgbox(body, title) {
             title != undefined ? $("#msgboxTitle").text(title) : $("#msgboxTitle").text("Attention");
             $("#msgboxBody").html(body);
-            $("#msgbox").modal("show");
+            $(() => { $("#msgbox").modal("show") });
         }
 
+        class Player {
+            jsonQueue = [];
+            staticAudio = [];
+            playerPointer = -1;
+            utterance;
+            playerObj;
+            statusText = "";
+            voices = [];
 
-        var cm = new ClipManager();
-        var player = new Player(cm);
+            constructor() {
+                let a = new Audio();
+                a.autoplay = true;
+                a.loop = false;
+                a.addEventListener("playing", () => {
+                    this.statusText = "playing";
+                });
+                a.addEventListener("pause", () => {
+                    if (!a.ended) this.statusText = "pause";
+                });
+                a.addEventListener("ended", () => {
+                    this.playNext();
+                });
+                this.playerObj = a;
 
-        $("#mainform input, #mainform select, #mainform textarea, #mainform button").attr(":disabled", "playerStatus=='playing'||playerStatus=='loading'||playerIsSaving");
+                let b = new SpeechSynthesisUtterance();
+                b.addEventListener("end", () => {
+                    this.playNext();
+                });
+                b.addEventListener("pause", () => {
+                    this.statusText = "pause";
+                });
+                b.addEventListener("start", () => {
+                    this.statusText = "playing";
+                });
+                b.addEventListener("resume", () => {
+                    this.statusText = "playing";
+                });
+                b.addEventListener("error", (e) => console.error(e));
+                this.utterance = b;
 
-        var id_dd = cm.addAudioFile("/res/audio/dingdong.mp3", "Ding Dong!");
-        var id_start = cm.addAudioFile("/res/audio/start.mp3", "Startup!");
+                let getvoices = setInterval(() => {
+                    if (this.voices.length <= 0) {
+                        this.voices = speechSynthesis.getVoices();
+                    } else {
+                        clearInterval(getvoices);
+                    }
+                }, 500);
+
+            }
+
+            playNext() {
+                if (this.statusText == "pause") return;   //For the break, as it can't be paused
+                if (this.playerPointer < this.jsonQueue.length - 1 && this.jsonQueue.length > 0) {
+                    this.playerPointer++;
+                    let thisone = this.jsonQueue[this.playerPointer];
+                    if (thisone.text != undefined) {
+                        console.log("Playing #" + this.playerPointer + " - utterance");
+                        this.utterance.text = thisone.text;
+                        this.utterance.rate = thisone.rate;
+                        for (let i = 0; i < this.voices.length; i++) {
+                            const val = this.voices[i];
+                            if (val.name == thisone.voice) {
+                                this.utterance.voice = val;
+                                break;
+                            }
+                        }
+                        if (thisone.pitch != undefined) this.utterance.pitch = thisone.pitch;
+                        speechSynthesis.speak(this.utterance);
+                    } else if (thisone.audioid != undefined) {
+                        console.log("Playing #" + this.playerPointer + " - audio " + this.staticAudio[thisone.audioid].name);
+                        this.playerObj.src = this.staticAudio[thisone.audioid].audio;
+                        this.playerObj.play();
+                    } else if (thisone.break != undefined) {
+                        console.log("Playing #" + this.playerPointer + " - break for " + thisone.break + " sec");
+                        setTimeout(() => {
+                            this.playNext();
+                        }, thisone.break * 1000);
+                    }
+                } else {
+                    this.clear();
+                }
+            }
+            pause() {
+                if (this.statusText != "pause") this.statusText = "pause";   //For the break, as it can't be paused
+                let thisone = this.jsonQueue[this.playerPointer];
+                if (thisone.text != undefined) {
+                    speechSynthesis.pause();
+                } else if (thisone.audioid != undefined) {
+                    this.playerObj.pause();
+                }
+            }
+            resume() {
+                if (this.statusText != "playing") this.statusText = "playing";   //For the break, as it can't be paused
+                let thisone = this.jsonQueue[this.playerPointer];
+                if (thisone.text != undefined) {
+                    speechSynthesis.resume();
+                } else if (thisone.audioid != undefined) {
+                    this.playerObj.play();
+                }
+            }
+            clear() {
+                this.jsonQueue.splice(0);
+                this.playerPointer = -1;
+                this.statusText = "";
+                speechSynthesis.cancel();
+            }
+            addAudioFile(audio, name = "") {
+                if (audio != undefined) {
+                    for (let i = 0; i < this.staticAudio.length; i++) {
+                        if (this.staticAudio[i].audio == audio) {
+                            return i;
+                        }
+                    }
+                    return this.staticAudio.push({ "audio": audio, "name": name }) - 1;
+                }
+            }
+            addToPlaylist(json) {
+                this.jsonQueue.push(json);
+            }
+        }
+
+        var player = new Player();
+
+        $("#mainform input, #mainform select, #mainform textarea, #mainform button").attr(":disabled", "playerStatus=='playing'||playerStatus=='loading'");
+
+        var id_dd = player.addAudioFile("res/audio/dingdong.mp3", "Ding Dong!");
+        var id_start = player.addAudioFile("res/audio/start.mp3", "Startup!");
+
+        function makeJSON(text) {        //input text should always be xml tags. i.e. <voice>...</voice>, <audio>, <break>, etc.
+            let thisone = $("<xml>" + text + "</xml>");
+            let json;
+            if (thisone.find("audio").length > 0) {
+                json = { "audioid": thisone.find("audio").attr("id") };
+            } else if (thisone.find("break").length > 0) {
+                let time = thisone.find("break").attr("time");
+                let findSec = /([0-9.]+)(ms|s)/.exec(time);
+                let sec = (findSec[2] == "ms" ? findSec[1] / 1000 : findSec[1]);
+                json = { "break": sec };
+            } else if (thisone.find("voice").length > 0) {
+                json = { "text": thisone.find("voice").html(), "voice": thisone.find("voice").attr("name"), "rate": thisone.find("voice").attr("rate") };
+                if (thisone.find("voice").attr("pitch") != undefined) json['pitch'] = thisone.find("voice").attr("pitch");
+            }
+            return json;
+        }
 
 
         const vm = Vue.createApp({
             data() {
                 return {
                     thispaper: processPaper(paper),
-                    cn_voices: [],
-                    en_voices: [],
+                    voices: [],
                     voice_cn: "",
                     speed_cn: 0.68,
                     voice_en_male: "",
@@ -385,9 +504,6 @@
                     texts: [],
                     activePB: -2, //-2: idle, -1: main, 0~:sub ques
                     playerStatus: "",
-                    playerIsSaving: false,
-                    playerCanSave: false,
-                    savefn: "",
                     settings: {
                         repeatWithTwoGenders: true,
                         skipEmptyQuesOrQuesArt: true
@@ -395,20 +511,20 @@
                 }
             },
             computed: {
-                en_male_voices() {
+                en_voices() {
                     let v = [];
-                    for (mv in this.en_voices) {
-                        if (this.en_voices[mv].gender == 1) {
-                            v.push(this.en_voices[mv]);
+                    for (mv in this.voices) {
+                        if (this.voices[mv].lang == "en-US" || this.voices[mv].lang == "en-GB") {
+                            v.push(this.voices[mv]);
                         }
                     }
                     return v;
                 },
-                en_female_voices() {
+                cn_voices() {
                     let v = [];
-                    for (mv in this.en_voices) {
-                        if (this.en_voices[mv].gender == 2) {
-                            v.push(this.en_voices[mv]);
+                    for (mv in this.voices) {
+                        if (this.voices[mv].lang == "zh-CN") {
+                            v.push(this.voices[mv]);
                         }
                     }
                     return v;
@@ -418,39 +534,30 @@
                 }
             },
             created() {
-                getVoices("en-us").then((v) => {
-                    if (v) {
-                        let en_voices = [];
-                        v.forEach((val) => {
-                            vals = val.name.split("-");
-                            val.displayName = "({0}) {1}".format(vals[1], vals[3]);
-                            en_voices.push(val);
+                let getvoices = setInterval(() => {
+                    if (this.voices.length <= 0) {
+                        this.voices = speechSynthesis.getVoices();
+                    } else {
+                        clearInterval(getvoices);
+                        let cn_voice_ok = false;
+                        let en_voice_ok = false;
+                        this.voices.forEach((v) => {
+                            if (v.lang == "zh-CN") cn_voice_ok = true;
+                            if (v.lang == "en-US" || v.lang == "en-GB") en_voice_ok = true;
                         });
-                        this.en_voices = en_voices;
+                        if (!cn_voice_ok || !en_voice_ok) msgbox("未发现中文或外文声音。无法继续。");
                     }
-                });
-                getVoices("zh-cn").then((v) => {
-                    if (v) {
-                        let cn_voices = [];
-                        v.forEach((val) => {
-                            vals = val.name.split("-");
-                            val.displayName = "({0}) {1}".format(ssml_gender[val.gender], vals[3]);
-                            cn_voices.push(val);
-                        });
-                        this.cn_voices = cn_voices;
-                    }
-                });
-
+                }, 500);
             },
             watch: {
                 en_voices(n, o) {
                     if (n.length > 0) {
-                        this.voice_en_male = n[7].name;
-                        this.voice_en_female = n[9].name;
+                        this.voice_en_male = n[0].name;
+                        this.voice_en_female = n[1].name;
                     }
                 },
                 cn_voices(n, o) {
-                    if (n.length > 0) this.voice_cn = n[2].name;
+                    if (n.length > 0) this.voice_cn = n[0].name;
                 }
             },
             methods: {
@@ -509,6 +616,7 @@
                     let end = (wholetext ? p.questions.length : start + 1)
                     for (let id = start; id < end; id++) {
                         i = p.questions[id];
+                        let shalliskip = true;
                         if (this.settings.skipEmptyQuesOrQuesArt) {
                             shalliskip = i.ques == "" || i.quesart == "";
                         } else {
@@ -555,10 +663,7 @@
                                         if (index <= 0) {
                                             return false;
                                         } else {
-                                            for (var iii = index; iii <= 0; iii--) {
-                                                if (conv[iii].includes("</voice>")) break;
-                                            }
-                                            conv[iii] = conv[iii].replace("</voice>", " " + lines[index] + "</voice>");
+                                            conv[conv.length - 1] = conv[conv.length - 1].replace("</voice>", " " + lines[index] + "</voice>");
                                             continue;
                                         }
                                     } else {
@@ -571,8 +676,6 @@
                                             conv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
                                         }
                                     }
-                                    // Added break to make the conversation sound less rushy
-                                    conv.push(setpause.format(0.4));
                                 }
                                 for (let r = 0; r < i.quesrepeat; r++) {
                                     t = t.concat(conv);
@@ -596,10 +699,7 @@
                                             if (index <= 0) {
                                                 return false;
                                             } else {
-                                                for (var iiii = index; iiii <= 0; iiii--) {
-                                                    if (thisconv[iiii].includes("</voice>")) break;
-                                                }
-                                                thisconv[iii] = thisconv[iii].replace("</voice>", " " + lines2[index] + "</voice>");
+                                                thisconv[thisconv.length - 1] = thisconv[thisconv.length - 1].replace("</voice>", " " + lines2[index] + "</voice>");
                                                 continue;
                                             }
                                         } else {
@@ -612,7 +712,6 @@
                                                 thisconv.push(setvoiceSpeed.format(this.voice_en_male, i.rate, element.substring(curCharPos + 1)));
                                             }
                                         }
-                                        thisconv.push(setpause.format(0.4));
                                     }
                                     for (let r = 0; r < i.quesrepeat; r++) {
                                         convs = convs.concat(thisconv);
@@ -668,22 +767,18 @@
                     return true;
                 },
                 submit(qid) {
-                    if (this.activePB != qid) { player.clearPlaylist(); this.activePB = qid; }
+                    if (this.activePB != qid) { player.clear(); this.activePB = qid; }
                     let m = this.makeText(qid);
                     if (this.texts.length <= 0) { msgbox("内容为空。"); return; }
                     if (m) {
                         this.texts.forEach((v) => {
-                            player.addToPlaylist(cm.addClip(cm.makeJSON(v)));
+                            player.addToPlaylist(makeJSON(v));
                         });
-                        cm.startPreparing();
-                        player.play();
+                        player.playNext();
                     } else {
                         console.error("Something is wrong with the text.");
                         msgbox("Uh-oh, something is wrong with what you input.");
                     }
-                },
-                startSaving() {
-                    player.save(this.savefn);
                 },
                 saveTempl(saveart = false) {
                     let outstr = JSON.stringify(this.thispaper);
@@ -761,84 +856,41 @@
             <button class="btn" :class="[typeClass]" disabled v-if="mode=='loading' && active"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>请稍候……</button>
             <button class="btn" :class="[typeClass]" v-if="mode=='playing' && active" @click="playerPause">暂停</button>
             <button class="btn" :class="[typeClass]" v-if="mode=='finished' && active" @click="playerPlay">重播</button>
-            <button class="btn" :class="[typeClass]" v-if="mode=='pause' && active" @click="playerPlay">继续</button>
+            <button class="btn" :class="[typeClass]" v-if="mode=='pause' && active" @click="playerResume">继续</button>
             `,
             methods: {
                 playerPause() {
                     player.pause();
                 },
                 playerPlay() {
-                    player.play();
+                    player.playNext();
+                },
+                playerResume() {
+                    player.resume();
                 }
             }
         })
-            .component("save-button", {
-                props: ['mode', 'active'], //mode <- issaving, active <- cansave
-                template:
-                    `
-            <button class="btn btn-secondary" data-toggle="modal" data-target="#inputfilenamedlg" v-if="mode==false" :disabled="active==false">保存刚刚播放的音频</button>
-            <button class="btn btn-secondary" v-if="mode==true" disabled><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>请稍候……</button>
-            `
-            })
-            .component("simple-player", {
-                props: ["src"],
-                data() {
-                    return {
-                        playerObj: null,
-                        playerStatus: ""
-                    }
-                },
-                created() {
-                    this.playerObj = new Audio(this.src);
-                    this.playerObj.addEventListener("waiting", () => this.playerStatus = "loading");
-                    this.playerObj.addEventListener("playing", () => this.playerStatus = "playing");
-                    this.playerObj.addEventListener("pause", () => this.playerStatus = "pause");
-                    this.playerObj.addEventListener("ended", () => this.playerStatus = "ended");
-                    this.playerObj.addEventListener("emptied", () => this.playerStatus = "");
-                },
-                watch: {
-                    src(n, o) {
-                        this.playerObj.src = n;
-                    }
-                },
-                template:
-                    `
-                    <button class="btn btn-info" v-if="playerStatus=='pause'||playerStatus==''||playerStatus=='ended'" :disabled="src==''||playerObj.error!=null" @click="playerObj.play()"><slot></slot></button>
-            <button class="btn btn-info" disabled v-if="playerStatus=='loading'">  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>  </button>
-            <button class="btn btn-info" v-if="playerStatus=='playing'" @click="playerObj.pause()">暂停</button>
-`
-            })
             .mount("#app");
 
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        });
         //Workaround for vue and bs component
         $("label.btn").click(function (e) {
             $(e.target).children("input").click();
         });
 
         $("#mainform input, #mainform select, #mainform textarea").change(() => {
-            player.clearPlaylist();
-            cm.stopPreparing();
-        });
-        $("#inputfilenamedlg").on("shown.bs.modal", () => {
-            vm.savefn = vm.thispaper.examTitle == "" ? new Date().getTime().toString() : vm.thispaper.examTitle;
-            let t = $("#filename");
-            t.focus();
-            t.select();
-        });
-
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
+            player.clear();
         });
 
         $(document).on("click", "button", (e) => {
             e.preventDefault();
         });
 
-
         setInterval(() => {
             vm.playerStatus = player.statusText;
-            vm.playerCanSave = player.cansave;
-            vm.playerIsSaving = player.issaving;
         }, 200);
 
 

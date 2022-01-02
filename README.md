@@ -2,15 +2,16 @@
 
 本工具可以帮助您快速制作外语考试中听力部分的音频。安装好后，使用时，只需几分钟，您就可以完成外语考试中听力部分的音频制作。
 
-此版本使用[Google Cloud Text to Speech](https://cloud.google.com/text-to-speech/)进行文字转语音，点击链接可了解更多。
+此版本使用浏览器的[Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)进行文字转语音，点击链接可了解更多。   
+由于此API的限制，此版本**无法**：   
++ 确定每个声音的性别；
++ 确定一个在线声音是否处于缓冲状态；
++ 将生成的语音保存为文件。
 
 ## 安装
-1. 下载源码，放在可以访问Google服务的服务器上。
-2. 按照[Google的说明](https://cloud.google.com/text-to-speech/docs/quickstart-client-libraries#before-you-begin)操作，取得您的密钥文件。
-3. 将您的密钥文件放置在您的服务器上，编辑`gctts.py`文件，并修改`/path/to/your/key.json`路径使其指向您的密钥文件。
-4. 安装依赖：
-    ```pip install --upgrade google-cloud-texttospeech flask```
-5. 运行`python gctts.py`，并使用现代的浏览器访问输出中提供的URL即可。
+1. 下载源码。
+2. 使用一个现代的浏览器打开。推荐使用[Microsoft Edge](https://www.microsoftedge.com/)或[Google Chrome](https://chrome.google.com/)，可免费使用浏览器内置的、基于其云服务的自然的语音。
+
 
 ## 使用
 1. 默认的模板是广西北部湾经济区初中学业水平考试中英语考试的听力部分。您可以直接在界面上修改参数来适应您的考试要求，并将编辑的结果保存成模板或模板+原文，以便下次再次载入使用。 
@@ -22,7 +23,7 @@
        （a）一段对话类题目，需要每一段开头都有说话人标记，如`M:`或`W:`，并确保有“：”来分隔说话人和说话内容；  
        （b）多段对话类题目，除了按照“一段对话”类题目进行编辑外，还需要使用一个空行来分隔各小题的内容。  
     (4) 可点击`播放此题`播放当前题目，亦可点击`全部播放`来播放全部题目的内容；    
-    (5) 在点击播放后，程序会逐步为您准备音频，请耐心等待。当指定内容的音频全部准备好后，可点击`保存刚刚播放的音频`来保存音频。
+    (5) 如果需要保存音频，可以考虑使用其他软件进行录音。
 
 3. 其他使用说明：   
     (1) `设置`中：   
