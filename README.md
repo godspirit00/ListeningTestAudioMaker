@@ -14,7 +14,7 @@
 
 ## 安装
 1. 下载源码。
-2. 使用一个现代的浏览器打开。推荐使用[Microsoft Edge](https://www.microsoftedge.com/)或[Google Chrome](https://chrome.google.com/)，可免费使用浏览器内置的、基于其云服务的自然的语音。
+2. 使用一个现代的浏览器打开。推荐使用[Microsoft Edge](https://www.microsoftedge.com/)或[Google Chrome](https://chrome.google.com/)，可免费使用浏览器内置的、基于其云服务的自然的在线语音。
 
 
 ## 使用
