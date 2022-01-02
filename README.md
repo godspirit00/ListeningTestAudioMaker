@@ -2,11 +2,15 @@
 
 本工具可以帮助您快速制作外语考试中听力部分的音频。安装好后，使用时，只需几分钟，您就可以完成外语考试中听力部分的音频制作。
 
-此版本使用浏览器的[Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)进行文字转语音，点击链接可了解更多。   
-由于此API的限制，此版本**无法**：   
-+ 确定每个声音的性别；
-+ 确定一个在线声音是否处于缓冲状态；
-+ 将生成的语音保存为文件。
+此版本使用浏览器的[Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)进行文字转语音，点击链接可了解更多。
+
+由于此API的限制，此版本**无法**：
+- 确定每个声音的性别；
+- 确定一个在线声音是否处于缓冲状态；
+- 将生成的语音保存为文件。
+
+其他可用的版本：
+- [基于Google Cloud Text to Speech的版本](https://github.com/godspirit00/ListeningTestAudioMaker/tree/google-cloud-tts_v2)
 
 ## 安装
 1. 下载源码。
