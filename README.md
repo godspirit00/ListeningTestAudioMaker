@@ -4,6 +4,9 @@
 
 此版本使用[Google Cloud Text to Speech](https://cloud.google.com/text-to-speech/)进行文字转语音，点击链接可了解更多。
 
+其他可用的版本：
+- [基于浏览器的Web Speech API的版本](https://github.com/godspirit00/ListeningTestAudioMaker/tree/webspeechapi-v2)
+
 ## 安装
 1. 下载源码，放在可以访问Google服务的服务器上。
 2. 按照[Google的说明](https://cloud.google.com/text-to-speech/docs/quickstart-client-libraries#before-you-begin)操作，取得您的密钥文件。
